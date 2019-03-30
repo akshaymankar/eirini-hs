@@ -1,0 +1,43 @@
+name:                eirini-hs
+version:             0.1.0.0
+github:              akshaymankar/eirini-hs#readme
+license:             BSD3
+author:              Akshay Mankar
+maintainer:          itsakshaymankar@gmail.com
+copyright:           Akshay Mankar
+description:         Please see the README on GitHub at <https://github.com/akshaymankar/eirini-hs#readme>
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+dependencies:
+- aeson
+- base >= 4.7 && < 5
+- scotty
+- wai
+
+library:
+  source-dirs: src
+
+executables:
+  eirini-hs:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -O2
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - eirini-hs
+
+tests:
+  eirini-hs-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+    - eirini-hs
+    - hspec
+    - hspec-wai
+    - hspec-wai-json
+    - http-types
