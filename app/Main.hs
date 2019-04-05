@@ -1,6 +1,6 @@
 module Main where
 
-import           Example (runApp)
+import Eirini (runApp)
 
 main :: IO ()
 main = runApp

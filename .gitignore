@@ -9,3 +9,4 @@ cabal.sandbox.config
 *.swp
 *.keter
 eirini-hs.cabal
+TAGS

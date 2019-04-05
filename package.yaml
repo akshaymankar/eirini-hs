@@ -13,8 +13,22 @@ extra-source-files:
 dependencies:
 - aeson
 - base >= 4.7 && < 5
+- base64-bytestring
+- bytestring
+- containers
+- either
+- errors
+- http-client
+- http-types
+- kubernetes-client
+- kubernetes-client-core
+- mtl
 - scotty
+- text
+- tls
 - wai
+- warp
+- yaml
 
 library:
   source-dirs: src

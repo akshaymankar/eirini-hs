@@ -1,36 +1,48 @@
-{-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
+{-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveFunctor     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 module Main (main) where
 
-import           Test.Hspec
-import           Test.Hspec.Wai
-import           Test.Hspec.Wai.JSON
-import           Network.HTTP.Types.Header
-import           Data.Aeson (Value(..), object, (.=))
+import Control.Monad.IO.Class    (MonadIO)
+import Data.Aeson                (Value (..), encode, object, (.=))
+import Kubernetes.OpenAPI.Core
+import Kubernetes.OpenAPI.Model
+import KubernetesExtras.Client
+import Network.HTTP.Types.Header
+import Network.Wai               (Application)
+import Test.Hspec
+import Test.Hspec.Wai
+import Test.Hspec.Wai.JSON
 
-import           Example (app)
+import qualified Data.Map as Map
+
+import Eirini
 
 main :: IO ()
 main = hspec spec
 
 spec :: Spec
-spec = with app $ do
-  describe "GET /" $ do
-    it "responds with 200" $ do
-      get "/" `shouldRespondWith` 200
-
-    it "responds with 'hello'" $ do
-      get "/" `shouldRespondWith` "hello"
-
-    it "responds with 200 / 'hello'" $ do
-      get "/" `shouldRespondWith` "hello" {matchStatus = 200}
-
-    it "has 'Content-Type: text/plain; charset=utf-8'" $ do
-      get "/" `shouldRespondWith` 200 {matchHeaders = ["Content-Type" <:> "text/plain; charset=utf-8"]}
-
-  describe "GET /some-json" $ do
-    it "responds with some JSON" $ do
-      get "/some-json" `shouldRespondWith` expectedJsonResponse
-
-expectedJsonResponse = 
-  let ResponseMatcher status headers body = [json|{foo: 23, bar: 42}|]
-  in ResponseMatcher status [hContentType <:> "application/json; charset=utf-8"] body
+spec = do
+  with (app $ EiriniOpts $ KubeConfigFile "/Users/axeman/.kube/config") $ do
+    describe "desire LRP" $ do
+      it "responds with 200" $ do
+        let lrp = DesireLRPRequest { lrpGuid = "guid-1234"
+                                   , lrpVersion = "version-1234"
+                                   , lrpProcessGuid = "process-1234"
+                                   , lrpPorts = [8080]
+                                   , lrpRoutes = Map.empty
+                                   , lrpDockerImageURL = "redis"
+                                   , lrpDropletHash = "droplet-hash"
+                                   , lrpStartCommand = "redis-server"
+                                   , lrpEnvironment = Map.empty
+                                   , lrpInstnaces = 1
+                                   , lrpLastUpdated = "2018-01-01"
+                                   , lrpHealthCheckType = "some-health-check-type"
+                                   , lrpHealthCheckHTTPEndpoint = "/healthz"
+                                   , lrpHealthCheckTimeoutMs = 2000
+                                   , lrpMemoryMB = 1000
+                                   , lrpCPUWeigh = 1
+                                   , lrpVolumeMounts = []
+                                   }
+        put "/apps/process-1234" (encode lrp) `shouldRespondWith` 200
